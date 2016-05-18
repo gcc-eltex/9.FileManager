@@ -1,0 +1,15 @@
+#include <stdlib.h>
+#include <wchar.h>
+#include <stdio.h>
+#include <string.h>
+#include <ncurses.h>
+#include <signal.h>	
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <time.h>
+#include <locale.h>
+#include <math.h>
+#include <unistd.h>
+#include "fmanager.h"
