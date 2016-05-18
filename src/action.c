@@ -33,7 +33,7 @@ void action_mvdown()
 
 	getmaxyx(win[win_active], height, width);
 	//Если дошли до конца диретории
-	if(dir_print + dir_inwin >= dir_count[win_active] - 2)
+	if(dir_print + dir_inwin >= dir_count[win_active] - 1)
 		return;
 	//Если дошли до конца окна
 	if(dir_inwin >= height - 1)

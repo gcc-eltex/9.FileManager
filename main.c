@@ -27,6 +27,7 @@ int main()
 			break;
 		}
 	}
-
 	windestroy();
+	for(int i = 0; i < dir_count[win_active]; i++)
+		printf("%s\n", dir_content[win_active][i].name);
 }

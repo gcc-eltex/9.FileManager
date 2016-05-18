@@ -15,15 +15,12 @@ unsigned dir_get(char *name, struct dline **content)
 	//Получаем содержимое директории
 	dir = opendir(name);
 	subdir = readdir(dir);
-	for(i = 1; subdir != NULL; subdir = readdir(dir), i++)
+	for(i = 1; subdir != NULL; subdir = readdir(dir))
 	{
 		stat(subdir->d_name, &infodir);	//Вытаскивает подробную информацию о файле
 		//Если это ссылка на себя, то игнорируем
 		if(!strcmp(subdir->d_name,"."))
-		{
-			i--;
 			continue;
-		}
 		//Если ссылка на родителя, то ставим в начало
 		if(!strcmp(subdir->d_name,".."))
 		{
@@ -39,6 +36,7 @@ unsigned dir_get(char *name, struct dline **content)
 			sprintf((*content)[i].size, "%d", (int)infodir.st_size);
 			strftime((*content)[i].cdate, 32, "%B %d %H:%M", gmtime(&(infodir.st_ctime)));
 			(*content)[i].type = subdir->d_type;
+			i++;
 		}
 	}
 	printf("\n\n");
