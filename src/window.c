@@ -1,7 +1,7 @@
 #include "../headers/shared.h"
 
 //Инициальзирует все переменные и графику
-void wininit()	
+void win_init()	
 {
 	//Инициализируем все переменные
 	dir_print = 0;
@@ -16,12 +16,12 @@ void wininit()
 
 	//Инициализация ncurses
 	initscr();						//ncurses mode
+	refresh();	
 	noecho();						//Отключить вывод клвиш
 	//cbreak();						//Отключение линейной буферизации
-	curs_set(0);
-	keypad(stdscr, TRUE);
-	signal (SIGWINCH, winresize);
-
+	curs_set(0);					//Прячем курсор
+	keypad(stdscr, TRUE);			//Включаем обработку спец клавиш
+	signal (SIGWINCH, win_resize);	//Вызов функции при ресайзе окна
 	//Создаем окна
 	win[WIN_BL] = newwin((LINES - 2), floor(COLS / 2), 0, 0);
 	win[WIN_BR] = newwin((LINES - 2), COLS - floor(COLS / 2), 0, floor(COLS / 2));
@@ -41,7 +41,7 @@ void wininit()
 }
 
 //Действие при изменении размера терминала
-void winresize()								
+void win_resize()								
 {
 	struct winsize size;
 
@@ -52,7 +52,7 @@ void winresize()
 
     //Очистка экрана
 	clear();
-	refresh();
+	//refresh();
 	
 	//Изменяем размеры окон
 	resizeterm(LINES, COLS);
@@ -68,11 +68,12 @@ void winresize()
 	mvwin(win[WIN_PB], LINES - 2, 0);
 
 	//Обновляем 
+	refresh();
 	winref_all();
 }
 
 //Очистка памяти и отключение графики
-void windestroy()								
+void win_destroy()								
 {
 	endwin();
 }
@@ -92,7 +93,6 @@ void winref_panel(unsigned index)
 {
 	wclear(win[index]);
 	mvwprintw(win[index], 0, 0, " [ESC] Exit");
-	refresh();  // ПОЧЕМУ??????
 	wrefresh(win[index]);
 }
 
@@ -122,7 +122,7 @@ void winref_content(unsigned index)
 	{
 		if(i < dir_count[index])	//Если есть что выводить
 		{
-			//Из-за проблем с кодировкой пришлось выводить каждое поле отдельно
+			//Из-за проблем с КОДИРОВКОЙ пришлось выводить каждое поле отдельно :(
 			sprintf(content, fname, dir_content[index][j].name);
 			mvwprintw(win[index], i, 0, content);
 			sprintf(content, fsize, dir_content[index][j].size);
@@ -139,7 +139,7 @@ void winref_content(unsigned index)
 	if(index == win_active)
 	{
 		wattron(win[index],COLOR_PAIR(1));
-		//Закрашиваю фон всей строки
+		//Закрашиваю фон всей строки опять же из за кодировки :(
 		sprintf(fline, "%%%d.%ds", width, width);
 		sprintf(content, fline, " ");
 		mvwprintw(win[index], dir_inwin, 0, content);
@@ -180,7 +180,7 @@ void winref_border(unsigned index)
 	width = width - 2;
 	lname = width * 0.5; 
 	lsize = width * 0.2 - 2;
-	ldate = width - lname - lsize - 7;
+	ldate = width - lname - lsize - 5;
 	sprintf(format, " %%-%d.%ds|%%%d.%ds |%%%d.%ds ", lname, lname, lsize, lsize, ldate, ldate);
 
 	//Вывод заголовка
@@ -190,7 +190,7 @@ void winref_border(unsigned index)
 	wattroff(win[index],COLOR_PAIR(3));
 
 	//Рисуем рамкy
-	refresh();					//ПОЧЕМУ НЕТ РАМКИ БЕЗ ЭТОГО?????????
+	//refresh();	
 	box(win[index], 0, 0); 
 
 	//Выводим путь (занимает половину)

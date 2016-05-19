@@ -10,7 +10,12 @@ unsigned dir_get(char *name, struct dline **content)
 	//Очистка памяти, если была выделена
 	if(*content != NULL)
 		free(*content);
-	*content = malloc(sizeof(struct dline) * 512);
+
+	//ПОЧЕМУ СНАЧАЛА НЕ МОГУ КОРРЕКТНО ПОЛУЧИТЬ КОЛИЧЕСТВО ОБЬЕКТОВ В ДИРЕКТОРИИ?????
+	//если вначале открою директорию, все переберу
+	//, закрою директорию, то про повторном открытии ниже 
+	// нучнет выводит 70% мусора. Поэтому пока некрасиво выделяю память под большой массив
+	*content = malloc(sizeof(struct dline) * 10000);
 
 	//Получаем содержимое директории
 	dir = opendir(name);
@@ -29,7 +34,7 @@ unsigned dir_get(char *name, struct dline **content)
 			strftime((*content)[0].cdate, 32, "%d.%m %H:%M", gmtime(&(infodir.st_ctime)));
 			(*content)[0].type = subdir->d_type;
 		}
-		//Иначе попарядку пишем
+		//Иначе пишем попорядку
 		else
 		{
 			strcpy((*content)[i].name, subdir->d_name);
@@ -39,7 +44,6 @@ unsigned dir_get(char *name, struct dline **content)
 			i++;
 		}
 	}
-	printf("\n\n");
 	closedir(dir);
 	return i;
 }

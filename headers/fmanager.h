@@ -5,7 +5,7 @@
 #define WIN_BR 	3	//Граница правого окна
 #define WIN_PB 	4	//Нижняя панель
 
-struct dline	//Структура в которой хранится строковое представление информации о директории/файле
+struct dline			//Структура в которой хранится строковое представление информации о директории/файле, которая будет выводится
 {
 	char name[128];		//Имя файла/директории
 	char cdate[32];		//Дата модификации
@@ -25,18 +25,18 @@ unsigned dir_inwin;				//Индекс выбраного фали/папки в 
 unsigned dir_print;				//Индекс фала/папки в массиве с содержимым директории активного окна с которого начинается вывод
 
 //window.c
-void wininit();							//Инициальзирует все переменные и графику
-void winresize();						//Действие при изменении размера терминала
-void windestroy();						//Очистка памяти и отключение графики
+void win_init();						//Инициальзирует все переменные и графику
+void win_resize();						//Действие при изменении размера терминала
+void win_destroy();						//Очистка памяти и отключение графики
 void winref_all();						//Перерисовывает все
 void winref_panel(unsigned winindex);	//Перерисовывает панель
 void winref_content(unsigned winindex);	//Перерисовывает окно c содержимым
 void winref_border(unsigned winindex);	//Перерисовывает рамку
 
 //fsystem.c
-//void item_delete(char *name);
-//void item_create(char *name);
-//void item_rename(char *old_name, char *new_name);
+//void dir_delete(char *name);
+//void dir_create(char *name);
+//void dir_rename(char *old_name, char *new_name);
 unsigned dir_get(char *name, struct dline **content);
 
 //action.c
