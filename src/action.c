@@ -58,15 +58,15 @@ void action_open()
 	//Если это папка, то переходим в нее
 	if(newdir.type == DT_DIR)
 	{
-		dir_print = 0;
-		dir_inwin = 0;
-
 		//Изменение рабочей директории
-		chdir(path);
+		if(chdir(path) == -1)
+			return;
 		getcwd(dir_patch[win_active], 1024);
 		
 		//Получение ее содержимого и вывод
 		dir_count[win_active] = dir_get(path, &(dir_content[win_active]));
+		dir_print = 0;
+		dir_inwin = 0;
 		winref_border(win_active + 2);
 		winref_content(win_active);
 	}
