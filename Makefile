@@ -4,7 +4,7 @@ SRC=$(wildcard src/*.c)
 OBJ=$(patsubst src/%.c,%.o,$(SRC))
 
 all: libs
-	gcc main.c -o main -L./libs/ -lfmanager -lncurses -lm
+	gcc main.c -o main -L./libs/ -lfmanager -lncursesw -lm
 	rm -rf *.o
 libs: $(OBJ)
 	ar -cr ./libs/libfmanager.a $(OBJ)

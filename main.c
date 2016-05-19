@@ -3,7 +3,7 @@
 int main()
 {
 	int key = 0;
-	//setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "");
 	wininit();
 	
 	while((key = getch()) != 27)

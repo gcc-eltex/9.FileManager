@@ -9,6 +9,8 @@ void wininit()
 	win_active = WIN_L;
 	getcwd(dir_patch[WIN_L], 1024);
 	getcwd(dir_patch[WIN_R], 1024);
+	dir_count[WIN_L] = NULL;
+	dir_count[WIN_R] = NULL;
 	dir_count[WIN_L] = dir_get(dir_patch[WIN_L], &(dir_content[WIN_L]));
 	dir_count[WIN_R] = dir_get(dir_patch[WIN_R], &(dir_content[WIN_R]));
 
@@ -89,7 +91,7 @@ void winref_all()
 void winref_panel(unsigned index)
 {
 	wclear(win[index]);
-	mvwprintw(win[index], 0, 0, " 9-EXIT");
+	mvwprintw(win[index], 0, 0, " [ESC] Exit");
 	refresh();  // ПОЧЕМУ??????
 	wrefresh(win[index]);
 }
@@ -99,45 +101,62 @@ void winref_content(unsigned index)
 {
 	int width;						//Ширина окна
 	int height; 					//Высота окна
-	char pformat[32];				//Формат вывода
-	char pdata[256];				//Строка для вывода
+	char content[256];				//Строка для вывода
 	unsigned lname, lsize, ldate;	//Длина каждого параметра
+	char fname[32], fsize[32], fdate[32], fline[32];//Формат вывода каждого параметра
 
-	//Очстка и смещение курсора
+	//Очстка
 	wclear(win[index]);
-	wmove(win[index], 0, 0);
 
-	//Определение формата вывода так, чтобы строка занимала все окно
+	//Определение формата вывода и размера каждого поля
 	getmaxyx(win[index], height, width);
-	lname = width * 0.5; 
-	lsize = width * 0.2 - 2;
-	ldate = width - lname - lsize - 5;
-	sprintf(pformat, " %%-%d.%ds %%%d.%ds  %%%d.%ds ", lname, lname, lsize, lsize, ldate, ldate);
+	lname = width * 0.5 + 1; 
+	lsize = width * 0.2;
+	ldate = width - lname - lsize;
+	sprintf(fname, "%%-%d.%ds", lname, lname);
+	sprintf(fsize, "%%%d.%ds", lsize, lsize);
+	sprintf(fdate, "%%%d.%ds", ldate, ldate);
 
 	//Вывод всего содержимого
 	for(int i = 0, j = dir_print; i < height; i++, j++)
 	{
 		if(i < dir_count[index])	//Если есть что выводить
 		{
-
-			sprintf(pdata, pformat, dir_content[index][j].name, dir_content[index][j].size, dir_content[index][j].cdate);
-			mvwprintw(win[index], i, 0, pdata);
+			//Из-за проблем с кодировкой пришлось выводить каждое поле отдельно
+			sprintf(content, fname, dir_content[index][j].name);
+			mvwprintw(win[index], i, 0, content);
+			sprintf(content, fsize, dir_content[index][j].size);
+			mvwprintw(win[index], i, lname, content);
+			sprintf(content, fdate, dir_content[index][j].cdate);
+			mvwprintw(win[index], i, lname + lsize, content);
 		}
-		//Дорисовка горизонтальных линий
-		mvwaddch(win[index], i, lname + 1, ACS_VLINE);
-		mvwaddch(win[index], i, lname + lsize + 3, ACS_VLINE);
+		//Дорисовка разделительных линий столбцов
+		mvwaddch(win[index], i, lname, ACS_VLINE);
+		mvwaddch(win[index], i, lname + lsize, ACS_VLINE);
 	}
-	wrefresh(win[index]);
 
-	//Выделение выбраной директории если обновляем активное окно
+	//Если обновляется активное окно, то выделяем выбраную директорию
 	if(index == win_active)
 	{
 		wattron(win[index],COLOR_PAIR(1));
-		sprintf(pdata, pformat, dir_content[index][dir_inwin + dir_print].name, dir_content[index][dir_inwin + dir_print].size, dir_content[index][dir_inwin + dir_print].cdate);
-		mvwprintw(win[index], dir_inwin, 0, pdata);
+		//Закрашиваю фон всей строки
+		sprintf(fline, "%%%d.%ds", width, width);
+		sprintf(content, fline, " ");
+		mvwprintw(win[index], dir_inwin, 0, content);
+
+		//Печать названия директории
+		sprintf(content, fname, dir_content[index][dir_inwin + dir_print].name);
+		mvwprintw(win[index], dir_inwin, 0, content);
+		//Ее размера
+		sprintf(content, fsize, dir_content[index][dir_inwin + dir_print].size);
+		mvwprintw(win[index], dir_inwin, lname, content);
+		//Даты модификации
+		sprintf(content, fdate, dir_content[index][dir_inwin + dir_print].cdate);
+		mvwprintw(win[index], dir_inwin, lname + lsize, content);
+		
 		//Дорисовка горизонтальных линий
-		mvwaddch(win[index], dir_inwin, lname + 1, ACS_VLINE);
-		mvwaddch(win[index], dir_inwin, lname + lsize + 3, ACS_VLINE);
+		mvwaddch(win[index], dir_inwin, lname, ACS_VLINE);
+		mvwaddch(win[index], dir_inwin, lname + lsize, ACS_VLINE);
 		wattroff(win[index],COLOR_PAIR(1));
 	}
 	//Обновление экрана
@@ -149,36 +168,37 @@ void winref_border(unsigned index)
 {
 	int width;						//Ширина окна
 	int height; 					//Высота окна
-	char pformat[32];				//Формат вывода
-	char pdata[256];				//Строка для вывода
+	char format[32];				//Формат вывода заголовка
+	char content[256];				//Строка с данными
 	unsigned lname, lsize, ldate;	//Длина каждого параметра
 
 	//Очстка 
 	wclear(win[index]);
 
-	//Определение формата вывода так, чтобы страка занимала все окно
+	//Определение формата вывода заголовка
 	getmaxyx(win[index], height, width);
 	width = width - 2;
 	lname = width * 0.5; 
 	lsize = width * 0.2 - 2;
 	ldate = width - lname - lsize - 7;
+	sprintf(format, " %%-%d.%ds|%%%d.%ds |%%%d.%ds ", lname, lname, lsize, lsize, ldate, ldate);
 
-	sprintf(pformat, " %%-%d.%ds %%%d.%ds  %%%d.%ds ", lname, lname, lsize, lsize, ldate, ldate);
-	sprintf(pdata, pformat, "File name", "Size", "Modify");
-
+	//Вывод заголовка
+	sprintf(content, format, "File name", "Size", "Modify");
 	wattron(win[index],COLOR_PAIR(3));
-	mvwprintw(win[index], 1, 1, pdata);
+	mvwprintw(win[index], 1, 1, content);
 	wattroff(win[index],COLOR_PAIR(3));
 
-	refresh();			//ПОЧЕМУ НЕТ РАМКИ БЕЗ ЭТОГО?????????
-    box(win[index], 0, 0); //Рисуем рамкy
+	//Рисуем рамкy
+	refresh();					//ПОЧЕМУ НЕТ РАМКИ БЕЗ ЭТОГО?????????
+	box(win[index], 0, 0); 
 
-    //Выводим путь
-    lsize = strlen(dir_patch[index - 2]);
-    if(lsize > width / 1.5)	//Есди длина пути больше чем есть мета, то урезаем
-    	sprintf(pdata, "...%s", dir_patch[index - 2] + lsize - (int)(width / 1.5));
-    else
-		sprintf(pdata, "%s", dir_patch[index - 2]);
-    mvwprintw(win[index], 0, 2, pdata);
-    wrefresh(win[index]);
+	//Выводим путь (занимает половину)
+	lsize = strlen(dir_patch[index - 2]);
+	if(lsize > width / 1.5)		//Если длина пути больше чем есть мета, то урезаем
+		sprintf(content, "...%s", dir_patch[index - 2] + lsize - (int)(width / 1.5));
+	else
+		sprintf(content, "%s", dir_patch[index - 2]);
+	mvwprintw(win[index], 0, 2, content);
+	wrefresh(win[index]);
 }

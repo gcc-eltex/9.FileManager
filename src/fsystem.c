@@ -1,6 +1,5 @@
 #include "../headers/shared.h"
 
-//Получает содержание директории
 unsigned dir_get(char *name, struct dline **content)
 {
 	DIR *dir;
@@ -8,9 +7,10 @@ unsigned dir_get(char *name, struct dline **content)
 	struct dirent *subdir;
 	int i;
 
-//WARING 
-	*content = malloc(sizeof(struct dline) * 256);	//УТЕЧКА ПАМЯТИ И ВОЗМОЖНО ПЕРЕПОЛНЕНИЕ. ИСПРАВИТЬ
-//WARING
+	//Очистка памяти, если была выделена
+	if(*content != NULL)
+		free(*content);
+	*content = malloc(sizeof(struct dline) * 512);
 
 	//Получаем содержимое директории
 	dir = opendir(name);
@@ -26,7 +26,7 @@ unsigned dir_get(char *name, struct dline **content)
 		{
 			strcpy((*content)[0].name, subdir->d_name);
 			strcpy((*content)[0].size, "-UP-");
-			strftime((*content)[0].cdate, 32, "%B %d %H:%M", gmtime(&(infodir.st_ctime)));
+			strftime((*content)[0].cdate, 32, "%d.%m %H:%M", gmtime(&(infodir.st_ctime)));
 			(*content)[0].type = subdir->d_type;
 		}
 		//Иначе попарядку пишем
@@ -34,7 +34,7 @@ unsigned dir_get(char *name, struct dline **content)
 		{
 			strcpy((*content)[i].name, subdir->d_name);
 			sprintf((*content)[i].size, "%d", (int)infodir.st_size);
-			strftime((*content)[i].cdate, 32, "%B %d %H:%M", gmtime(&(infodir.st_ctime)));
+			strftime((*content)[i].cdate, 32, "%d.%m %H:%M", gmtime(&(infodir.st_ctime)));
 			(*content)[i].type = subdir->d_type;
 			i++;
 		}
