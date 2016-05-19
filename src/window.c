@@ -9,8 +9,8 @@ void wininit()
 	win_active = WIN_L;
 	getcwd(dir_patch[WIN_L], 1024);
 	getcwd(dir_patch[WIN_R], 1024);
-	dir_count[WIN_L] = NULL;
-	dir_count[WIN_R] = NULL;
+	dir_content[WIN_L] = NULL;
+	dir_content[WIN_R] = NULL;
 	dir_count[WIN_L] = dir_get(dir_patch[WIN_L], &(dir_content[WIN_L]));
 	dir_count[WIN_R] = dir_get(dir_patch[WIN_R], &(dir_content[WIN_R]));
 
